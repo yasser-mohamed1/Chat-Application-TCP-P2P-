@@ -1,0 +1,72 @@
+# .NET build results
+bin/
+obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Uncomment if you have an Azure Pipelines build
+# *.tfstate
+# *.tfstate.backup
+
+# Rider specific files
+.idea/
+
+# ReSharper
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.ncrunch*
+*.ncrunchproject
+*.ncrunchsolution
+*.dotCover
+*.opendb
+*.tmproj
+*.rpt
+*.rptproj
+*.rptproj.user
+*.dmp
+
+# Fody
+FodyWeavers.xml
+
+# VS Code directories
+.vscode/
+
+# NuGet
+.nuget/
+*.nupkg
+*.snupkg
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# VS Code directories
+.vscode/
+
+# Log files
+*.log
+
+# OS-generated files
+.DS_Store
+*.swp
+*.swo
+
+# IDE specific files
+.idea/
+*.iml
+
+# MacOS
+*.DS_Store
+
+# Windows
+*.lnk
+
+# Backup files
+*.bak
+*.tmp
