@@ -94,7 +94,7 @@ ChatApp P2P/
 
 ## Chat APP Screen
 
-![Chat App P2P Screen](./assets/dialog.png)
+![Chat App P2P Screen](./assets/chatapp.png)
 
 ## Contributions
 
