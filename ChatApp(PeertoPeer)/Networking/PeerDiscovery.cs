@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Net.NetworkInformation;
 
 namespace ChatApp_PeertoPeer_.Networking
 {
@@ -9,7 +10,8 @@ namespace ChatApp_PeertoPeer_.Networking
     /// </summary>
     public class PeerDiscovery
     {
-        private UdpClient udpClient;
+        private UdpClient udpClientBroadCast;
+        private UdpClient udpClientListen;
         private RichTextBox logBox;
 
         /// <summary>
@@ -27,9 +29,9 @@ namespace ChatApp_PeertoPeer_.Networking
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task BroadcastDiscoveryAsync()
         {
-            udpClient = new UdpClient { EnableBroadcast = true };
-            IPEndPoint broadcastEndpoint = new IPEndPoint(IPAddress.Broadcast, 8000);
-
+            udpClientBroadCast = new UdpClient { EnableBroadcast = true };
+            IPAddress broadcastIP = IPAddress.Parse("192.168.1.255");
+            IPEndPoint broadcastEndpoint = new IPEndPoint(broadcastIP, 8000);
             int counter = 5;
 
             while (counter-- > 0)
@@ -37,7 +39,7 @@ namespace ChatApp_PeertoPeer_.Networking
                 string discoveryMessage = "DISCOVERY_REQUEST";
                 byte[] data = Encoding.UTF8.GetBytes(discoveryMessage);
 
-                await udpClient.SendAsync(data, data.Length, broadcastEndpoint);
+                await udpClientBroadCast.SendAsync(data, data.Length, broadcastEndpoint);
                 Log("Discovery request broadcasted.");
 
                 await Task.Delay(5000);
@@ -50,13 +52,13 @@ namespace ChatApp_PeertoPeer_.Networking
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task ListenForDiscoveryAsync()
         {
-            udpClient = new UdpClient(8000);
+            udpClientListen = new UdpClient(8000);
 
             while (true)
             {
                 try
                 {
-                    UdpReceiveResult result = await udpClient.ReceiveAsync();
+                    UdpReceiveResult result = await udpClientListen.ReceiveAsync();
                     string receivedMessage = Encoding.UTF8.GetString(result.Buffer);
                     IPEndPoint senderEndpoint = result.RemoteEndPoint;
                     string localEndpoint = GetLocalIPAddress();
@@ -64,16 +66,18 @@ namespace ChatApp_PeertoPeer_.Networking
                     if (receivedMessage == "DISCOVERY_REQUEST" && remoteAddress != localEndpoint)
                     {
                         Log($"Discovery request received from {senderEndpoint.Address}:{senderEndpoint.Port}");
+                        Log($"You can connect to it through Address: {senderEndpoint.Address} and Port: 5000");
 
                         string responseMessage = $"DISCOVERY_RESPONSE from {localEndpoint}";
                         byte[] responseData = Encoding.UTF8.GetBytes(responseMessage);
 
-                        await udpClient.SendAsync(responseData, responseData.Length, senderEndpoint);
-                        Log("Discovery response sent.");
+                        IPEndPoint senderEndpointResponse = new IPEndPoint(senderEndpoint.Address, 8000);
+                        await udpClientListen.SendAsync(responseData, responseData.Length, senderEndpointResponse);
                     }
                     else if (receivedMessage.StartsWith("DISCOVERY_RESPONSE"))
                     {
                         Log($"Received response from peer: {senderEndpoint.Address}:{senderEndpoint.Port}");
+                        Log($"You can connect to it through Address: {senderEndpoint.Address} and Port: 5000");
                     }
                 }
                 catch (Exception ex)
@@ -89,15 +93,27 @@ namespace ChatApp_PeertoPeer_.Networking
         /// <returns>The local IP address as a string.</returns>
         public static string GetLocalIPAddress()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            foreach (NetworkInterface netInterface in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
+                if (netInterface.OperationalStatus == OperationalStatus.Up &&
+                    (netInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
+                     netInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211))
                 {
-                    return ip.ToString();
+                    var gatewayAddress = netInterface.GetIPProperties().GatewayAddresses.FirstOrDefault();
+                    if (gatewayAddress != null)
+                    {
+                        foreach (UnicastIPAddressInformation ip in netInterface.GetIPProperties().UnicastAddresses)
+                        {
+                            if (ip.Address.AddressFamily == AddressFamily.InterNetwork &&
+                                !IPAddress.IsLoopback(ip.Address))
+                            {
+                                return ip.Address.ToString();
+                            }
+                        }
+                    }
                 }
             }
-            throw new Exception("No network adapters with an IPv4 address in the system!");
+            return "No valid IPv4 address found.";
         }
 
         /// <summary>
@@ -106,10 +122,17 @@ namespace ChatApp_PeertoPeer_.Networking
         /// <param name="message">The message to log.</param>
         private void Log(string message)
         {
-            logBox.Invoke(() =>
+            if (logBox.InvokeRequired)
+            {
+                logBox.Invoke((MethodInvoker)delegate
+                {
+                    logBox.AppendText(message + Environment.NewLine);
+                });
+            }
+            else
             {
                 logBox.AppendText(message + Environment.NewLine);
-            });
+            }
         }
     }
 }
