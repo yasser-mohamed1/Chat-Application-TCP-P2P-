@@ -32,25 +32,76 @@ Before running the application, ensure you have the following installed:
 git clone git@github.com:yasser-mohamed1/Chat-Application-TCP-P2P-.git
 ```
 
-## Buld and Run
+### Build and Run
 
 ```bash
+cd Chat-Application-TCP-P2P-/ChatApp\(PeertoPeer\)
 dotnet build
 dotnet run
 ```
 
 ## Folder Structure
 
-ChatApp PeerToPeer/
+```
+ChatApp P2P/
 │
-├── ChatApp(PeertoPeer).sln # Solution file
-├── src/ # Source files
-│ ├── Forms/ # Contains WinForms classes and UI logic
-│ ├── Models/ # Peer message and other data models
-│ ├── Networking/ # Networking logic for peer discovery and communication
-│ ├── Utilities/ # Helper and utility classes (e.g., serialization)
-│ └── Program.cs # Main entry point of the application
-│
-├── docs/ # Documentation (if any)
-├── README.md # Readme file
-└── .gitignore # Git ignore file
+├── ChatApp(PeertoPeer).sln
+├── Forms/
+│   ├── Form1.cs
+│   └── Form1.Designer.cs
+├── Models/
+|   └── PeerMessage.cs
+├── Networking/                  # Networking logic for peer discovery and communication
+│   ├── Peer.cs
+│   └── PeerDiscovery.cs
+├── Utilities/
+│   └── JsonMessageHandler.cs
+├── Components/
+|   └── InputDialog.cs
+├── Assets/
+├── Program.cs
+├── README.md
+└── .gitignore
+```
+
+## Class Overview
+
+- Form1: Main form that manages the user interface, sending and receiving messages.
+- Peer: Handles the network communication between peers via TCP.
+- PeerDiscovery: Manages peer discovery using UDP broadcast.
+- PeerMessage: Data model for messages sent between peers.
+- JsonMessageHandler: Utility for serializing and deserializing PeerMessage objects.
+
+## Usage
+
+1. Enter Name: When you run the application, a dialog will ask for your name.
+2. Discover Peers: Press the "Discover Peers" button to broadcast a discovery request over the network.
+3. Connect to Peers: After discovering peers, select one and connect to them.
+4. Send Messages: Once connected, you can send messages to the selected peer or broadcast messages to all peers.
+
+## Example
+
+- Start the application on two machines connected to the same network.
+- Machine A sends a discovery request and Machine B responds.
+- Machine A connects to Machine B.
+- Both machines can exchange messages in real-time.
+
+## Screenshots
+
+## Input Name Dialog Screen
+
+![Input Name Dialog Screen](./assets/dialog.png)
+
+## Chat APP Screen
+
+![Chat App P2P Screen](./assets/dialog.png)
+
+## Contributions
+
+Contributions are welcome! Please feel free to submit a Pull Request with changes.
+
+## Contact
+
+For any questions or suggestions, feel free to contact me:
+
+Email: y4ssermoh4med@gmail.com
